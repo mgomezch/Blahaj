@@ -16,7 +16,7 @@ I tested this minimally on 2.9rc2.  YMMV.  Let me know if there's something to f
 
 You can craft the plushie item.  More likely, though, you'll want to rename your healing axe in an anvil.
 
-If the name includes "shark", "blahaj", "shonk", or any variant/size/color/pride-flag name (see below), it will change its appearance.
+If the name includes "shark", "blahaj", "shonk", or any size/color/pride-flag name (see below), it will change its appearance.
 
 There's a keybind for an in-game menu where you can fine-tune the position and angle of your haj.  You can also make it spin because why not.
 
@@ -70,17 +70,6 @@ These are case-insensitive.  Try naming your healing axe "Smol trans shonk" or s
 | Pink         | `pink`, `rosahaj`                                      |
 | Black        | `black`                                                |
 | White        | `white`                                                |
-
-| Variants                   | Keywords                                            |
-|:---------------------------|:----------------------------------------------------|
-| Bread shark                | `bread`, `baguette`, `toast`, `loaf`                |
-| Blåvingad whale            | `whale`, `blavingad`, `blåvingad`                   |
-| Bridget shark              | `bridget`, `biscuit`, `basket`, `bucket`, `brisket` |
-| Haunted Astolfo bean shark | `astolfo_bean`, `astolfo`, `bean`                   |
-| School Mahiro shark        | `mahiro_school`, `mahiro`, `oyama`, `onimai`        |
-| Lazy eepy Mahiro shark     | `mahiro_lazy`, `lazy mahiro`, `eepy mahiro`         |
-
-I don't even know what some of these are, tbh.  They're from the upstream mod that this mod is based on.  Don't @ me.
 
 | Size    | Keywords                                                     | Default scale |
 |:--------|:-------------------------------------------------------------|:--------------|
