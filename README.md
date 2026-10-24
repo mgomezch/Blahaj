@@ -1,8 +1,8 @@
 # Blåhaj for GTNH!
 
-Make your healing axe look like a soft shark friend.
+Make your healing axe and Field Engineer's Toolbox look like soft shark friends.
 
-This is a vibecoded (except for this README) adaptation of older lovely mods, modified to work with the healing axe in GTNH.  All credit to them, who actually did the work:
+This is a vibecoded (except for this README) adaptation of older lovely mods, modified to work with the healing axe and Field Engineer's Toolbox in GTNH.  All credit to them, who actually did the work:
 - [Blåhaj](https://github.com/hibiii/Blahaj) (Unlicense / public domain)
 - [Blåhaj of Undying](https://codeberg.org/enjarai/blahaj-of-undying) (Unlicense / public domain)
 - [Blåhaj Beyond](https://github.com/IThundxr/Blahaj-Beyond) (LGPL-2.0; hence this mod is LGPL-2.1)
@@ -14,7 +14,7 @@ I tested this minimally on a daily after 2.9rc2.  YMMV.  Let me know if there's 
 
 ## Usage
 
-You can craft the plushie item.  More likely, though, you'll want to rename your healing axe in an anvil.
+You can craft the plushie item.  More likely, though, you'll want to rename your healing axe or Field Engineer's Toolbox in an anvil.
 
 If the name includes "shark", "blahaj", "shonk", or any variant/size/color/pride-flag name (see below), it will change its appearance.
 

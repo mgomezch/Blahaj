@@ -20,7 +20,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
     modid = BlahajMod.MODID,
     name = BlahajMod.MODNAME,
     version = Tags.VERSION,
-    dependencies = "after:ExtraUtilities;after:ExtraUtils",
+    dependencies = "after:ExtraUtilities;after:ExtraUtils;after:gregtech",
     guiFactory = "ch.mgomez.blahaj.client.gui.BlahajGuiFactory")
 public class BlahajMod {
 

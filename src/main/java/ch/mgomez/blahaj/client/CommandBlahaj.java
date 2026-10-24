@@ -37,6 +37,7 @@ public class CommandBlahaj extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            ch.mgomez.blahaj.ClientProxy.registerSpecialItemRenderers();
             int count = CustomImageManager.reloadCustomImages();
             sender.addChatMessage(
                 new ChatComponentText(

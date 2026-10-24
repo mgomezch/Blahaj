@@ -2,7 +2,7 @@
 {
   "modid": "${modId}",
   "name": "${modName}",
-  "description": "Bl\u00e5haj for GTNH!  Makes your Healing Axe look like a 3D Bl\u00e5haj plushie (or craft as a standalone plushie).  Rename with size, color, pride flag, or character names to customize your shark.  Not affiliated with GTNH.",
+  "description": "Bl\u00e5haj for GTNH!  Makes your Healing Axe and Field Engineer's Toolbox look like 3D Bl\u00e5haj plushies (or craft as a standalone plushie).  Rename with size, color, pride flag, or character names to customize your shark.  Not affiliated with GTNH.",
   "version": "${modVersion}",
   "mcversion": "${minecraftVersion}",
   "url": "https://github.com/mgomezch/blahaj",

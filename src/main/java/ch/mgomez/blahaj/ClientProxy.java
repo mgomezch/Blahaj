@@ -18,7 +18,8 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class ClientProxy extends CommonProxy {
 
-    private static Item extraUtilsHealingAxe = null;
+    public static Item extraUtilsHealingAxe = null;
+    public static Item gregtechToolbox = null;
 
     public static net.minecraft.client.settings.KeyBinding keyLiveAdjuster = new net.minecraft.client.settings.KeyBinding(
         "key.blahaj.live_adjuster",
@@ -44,6 +45,8 @@ public class ClientProxy extends CommonProxy {
         if (event.world != null && event.world.isRemote) {
             if (System.currentTimeMillis() - lastWorldLoadReloadTime > 2000L) {
                 lastWorldLoadReloadTime = System.currentTimeMillis();
+                registerHealingAxeRenderer();
+                registerToolboxRenderer();
                 ch.mgomez.blahaj.client.CustomImageManager.reloadCustomImages();
             }
         }
@@ -68,7 +71,7 @@ public class ClientProxy extends CommonProxy {
             MinecraftForgeClient.registerItemRenderer(itemBlahaj, renderer);
         }
 
-        registerHealingAxeRenderer();
+        registerSpecialItemRenderers();
 
         ch.mgomez.blahaj.client.CustomImageManager.ensureDirectoryExists();
         ch.mgomez.blahaj.client.CustomImageManager.reloadCustomImages();
@@ -77,7 +80,12 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void loadComplete(FMLLoadCompleteEvent event) {
         super.loadComplete(event);
+        registerSpecialItemRenderers();
+    }
+
+    public static void registerSpecialItemRenderers() {
         registerHealingAxeRenderer();
+        registerToolboxRenderer();
     }
 
     public static void registerHealingAxeRenderer() {
@@ -94,6 +102,22 @@ public class ClientProxy extends CommonProxy {
         } else {
             BlahajMod.LOG.warn(
                 "ExtraUtilities healing axe not found; 3D Bl\u00e5haj renderer active for standalone plushie only.");
+        }
+    }
+
+    public static void registerToolboxRenderer() {
+        if (gregtechToolbox == null) {
+            gregtechToolbox = findToolbox();
+        }
+        if (gregtechToolbox != null) {
+            RenderBlahajItem renderer = new RenderBlahajItem();
+            MinecraftForgeClient.registerItemRenderer(gregtechToolbox, renderer);
+            BlahajMod.LOG.info(
+                "Successfully registered 3D Bl\u00e5haj plushie renderer for GregTech toolbox ("
+                    + gregtechToolbox.getUnlocalizedName()
+                    + ")!");
+        } else {
+            BlahajMod.LOG.info("GregTech toolbox not found; skipping toolbox renderer registration.");
         }
     }
 
@@ -135,16 +159,66 @@ public class ClientProxy extends CommonProxy {
         return null;
     }
 
+    public static Item findToolbox() {
+        // 1. Direct field access via GregTech ItemList reflection
+        try {
+            Class<?> clazz = Class.forName("gregtech.api.enums.ItemList");
+            Field field = clazz.getField("ToolBox");
+            Object obj = field.get(null);
+            if (obj != null) {
+                java.lang.reflect.Method method = obj.getClass()
+                    .getMethod("getItem");
+                Object item = method.invoke(obj);
+                if (item instanceof Item) {
+                    return (Item) item;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. GameRegistry lookup across known modids and names
+        String[] modIds = new String[] { "gregtech", "GregTech", "gregtech_addon" };
+        String[] itemNames = new String[] { "gt.Item_Toolbox", "Item_Toolbox", "ToolBox", "toolbox" };
+        for (String modId : modIds) {
+            for (String itemName : itemNames) {
+                Item item = GameRegistry.findItem(modId, itemName);
+                if (item != null) {
+                    return item;
+                }
+            }
+        }
+
+        // 3. Fallback: scan Item.itemRegistry
+        for (Object obj : Item.itemRegistry) {
+            if (obj instanceof Item) {
+                Item item = (Item) obj;
+                String unlocalized = item.getUnlocalizedName();
+                String name = Item.itemRegistry.getNameForObject(item);
+                if ((name != null && name.toLowerCase(java.util.Locale.ROOT)
+                    .contains("toolbox")) || (unlocalized != null
+                        && unlocalized.toLowerCase(java.util.Locale.ROOT)
+                            .contains("toolbox"))) {
+                    return item;
+                }
+            }
+        }
+
+        return null;
+    }
+
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         if (event.itemStack == null) return;
         if (extraUtilsHealingAxe == null) {
             extraUtilsHealingAxe = findHealingAxe();
         }
+        if (gregtechToolbox == null) {
+            gregtechToolbox = findToolbox();
+        }
         boolean isHealingAxe = extraUtilsHealingAxe != null && event.itemStack.getItem() == extraUtilsHealingAxe;
+        boolean isToolbox = gregtechToolbox != null && event.itemStack.getItem() == gregtechToolbox;
         boolean isBlahajItem = itemBlahaj != null && event.itemStack.getItem() == itemBlahaj;
 
-        if (isHealingAxe || isBlahajItem) {
+        if (isHealingAxe || isToolbox || isBlahajItem) {
             if (isHealingAxe) {
                 event.toolTip.add(
                     EnumChatFormatting.AQUA

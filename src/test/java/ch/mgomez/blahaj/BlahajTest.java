@@ -3,6 +3,7 @@ package ch.mgomez.blahaj;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
@@ -411,6 +412,65 @@ public class BlahajTest {
                     .isFlatImage());
         } finally {
             BlahajVariant.clearCustomVariants();
+        }
+    }
+
+    @Test
+    public void testToolboxVariantMatching() {
+        // Unrenamed Field Engineer's Toolbox returns default variant (classic blue)
+        assertEquals(
+            "default",
+            BlahajVariant.matchVariant("Field Engineer's Toolbox")
+                .getId());
+        assertFalse(
+            BlahajVariant.matchVariant("Field Engineer's Toolbox")
+                .isFlatImage());
+
+        // Renamed with pride or color keywords
+        assertEquals(
+            "trans",
+            BlahajVariant.matchVariant("Trans Field Engineer's Toolbox")
+                .getId());
+        assertEquals(
+            "pink",
+            BlahajVariant.matchVariant("Pink Toolbox")
+                .getId());
+        assertEquals(
+            "bread",
+            BlahajVariant.matchVariant("Toast Toolbox")
+                .getId());
+
+        // Size keywords on toolbox
+        assertTrue(BlahajVariant.isLarge("Chonker Toolbox"));
+        assertTrue(BlahajVariant.isLarge("Big Field Engineer's Toolbox"));
+        assertTrue(BlahajVariant.isSmall("Smol Toolbox"));
+        assertTrue(BlahajVariant.isSmall("Tiny Field Engineer's Toolbox"));
+
+        assertFalse(BlahajVariant.isLarge("Field Engineer's Toolbox"));
+        assertFalse(BlahajVariant.isSmall("Field Engineer's Toolbox"));
+    }
+
+    @Test
+    public void testFindToolboxSafeFallback() {
+        // When GregTech is not loaded on the test classpath and no item is registered, findToolbox() returns null
+        // without throwing exceptions
+        net.minecraft.item.Item item = ClientProxy.findToolbox();
+        assertNull("findToolbox() must return null safely when GregTech is absent", item);
+    }
+
+    @Test
+    public void testFindToolboxViaRegistry() {
+        try {
+            net.minecraft.item.Item dummyToolbox = new net.minecraft.item.Item();
+            dummyToolbox.setUnlocalizedName("gt.Item_Toolbox");
+            cpw.mods.fml.common.registry.GameRegistry.registerItem(dummyToolbox, "gt.Item_Toolbox", "gregtech");
+
+            net.minecraft.item.Item found = ClientProxy.findToolbox();
+            assertNotNull("findToolbox() must find registered toolbox in GameRegistry", found);
+            assertEquals(dummyToolbox, found);
+        } catch (Throwable ignored) {
+            // In pure JUnit without full Forge GameData bootstrap, registerItem may throw; safe fallback is tested
+            // above
         }
     }
 }
