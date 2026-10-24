@@ -36,57 +36,56 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build assemble
 
-      - name: Identify build jars
+      - name: Prepare distribution jars
         id: jars
         run: |
-          RELEASE_JAR=$(ls build/libs/blahaj-*.jar | grep -v '\-dev\.jar' | grep -v '\-sources\.jar' | grep -v '\-dirty' | head -n 1)
-          DEV_JAR=$(ls build/libs/blahaj-*-dev.jar | grep -v '\-dirty' | head -n 1)
-          SOURCES_JAR=$(ls build/libs/blahaj-*-sources.jar | grep -v '\-dirty' | head -n 1)
+          mkdir -p dist
+          cp build/libs/blahaj-*.jar dist/
+          rm -f dist/*-dirty*.jar
 
-          echo "release_jar=$RELEASE_JAR" >> "$GITHUB_OUTPUT"
-          echo "release_name=$(basename "$RELEASE_JAR")" >> "$GITHUB_OUTPUT"
-          echo "dev_jar=$DEV_JAR" >> "$GITHUB_OUTPUT"
-          echo "dev_name=$(basename "$DEV_JAR")" >> "$GITHUB_OUTPUT"
-          echo "sources_jar=$SOURCES_JAR" >> "$GITHUB_OUTPUT"
-          echo "sources_name=$(basename "$SOURCES_JAR")" >> "$GITHUB_OUTPUT"
+          RELEASE_JAR=$(ls dist/blahaj-*.jar | grep -v '\-dev\.jar' | grep -v '\-sources\.jar' | head -n 1)
+          DEV_JAR=$(ls dist/blahaj-*-dev.jar | head -n 1)
+          SOURCES_JAR=$(ls dist/blahaj-*-sources.jar | head -n 1)
 
-      - name: Upload release jar
-        if: steps.jars.outputs.release_jar != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.jars.outputs.release_name }}
-          path: ${{ steps.jars.outputs.release_jar }}
+          cp "$RELEASE_JAR" dist/blahaj.jar
+          cp "$DEV_JAR" dist/blahaj-dev.jar
+          cp "$SOURCES_JAR" dist/blahaj-sources.jar
 
-      - name: Upload dev jar
-        if: steps.jars.outputs.dev_jar != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.jars.outputs.dev_name }}
-          path: ${{ steps.jars.outputs.dev_jar }}
-
-      - name: Upload sources jar
-        if: steps.jars.outputs.sources_jar != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.jars.outputs.sources_name }}
-          path: ${{ steps.jars.outputs.sources_jar }}
+          echo "Distribution files ready in dist/:"
+          ls -lh dist/
 
       - name: Publish rolling latest release
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: Latest build
-          prerelease: true
-          files: |
-            build/libs/blahaj-*.jar
-            !build/libs/*-dirty*.jar
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest dist/*.jar \
+            --title "Latest build" \
+            --prerelease \
+            --notes "Automated build from commit ${GITHUB_SHA:0:7}. These are raw uncompressed JAR files."
 
       - name: Publish tagged release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            build/libs/blahaj-*.jar
-            !build/libs/*-dirty*.jar
-          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.jar \
+            --title "Release $GITHUB_REF_NAME" \
+            --generate-notes
+
+      - name: Output job summary
+        run: |
+          cat << 'EOF' >> "$GITHUB_STEP_SUMMARY"
+          ## 🦈 Blåhaj Build Output (Raw Unzipped JARs)
+
+          The build produced the following uncompressed `.jar` files:
+
+          | JAR File | Description | Direct Download |
+          | :--- | :--- | :--- |
+          | **`blahaj.jar`** | Standard mod jar for GTNH | [📥 Download `blahaj.jar`](https://github.com/${{ github.repository }}/releases/download/latest/blahaj.jar) |
+          | **`blahaj-dev.jar`** | Deobfuscated mod jar for development | [📥 Download `blahaj-dev.jar`](https://github.com/${{ github.repository }}/releases/download/latest/blahaj-dev.jar) |
+          | **`blahaj-sources.jar`** | Source code jar | [📥 Download `blahaj-sources.jar`](https://github.com/${{ github.repository }}/releases/download/latest/blahaj-sources.jar) |
+
+          > **Note**: Click any link above to download the raw `.jar` file directly. It will not be zipped.
+          EOF
