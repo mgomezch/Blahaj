@@ -33,6 +33,20 @@ public class ClientProxy extends CommonProxy {
             .bus()
             .register(this);
         cpw.mods.fml.client.registry.ClientRegistry.registerKeyBinding(keyLiveAdjuster);
+        net.minecraftforge.client.ClientCommandHandler.instance
+            .registerCommand(new ch.mgomez.blahaj.client.CommandBlahaj());
+    }
+
+    private long lastWorldLoadReloadTime = 0L;
+
+    @SubscribeEvent
+    public void onWorldLoad(net.minecraftforge.event.world.WorldEvent.Load event) {
+        if (event.world != null && event.world.isRemote) {
+            if (System.currentTimeMillis() - lastWorldLoadReloadTime > 2000L) {
+                lastWorldLoadReloadTime = System.currentTimeMillis();
+                ch.mgomez.blahaj.client.CustomImageManager.reloadCustomImages();
+            }
+        }
     }
 
     @SubscribeEvent
@@ -55,6 +69,9 @@ public class ClientProxy extends CommonProxy {
         }
 
         registerHealingAxeRenderer();
+
+        ch.mgomez.blahaj.client.CustomImageManager.ensureDirectoryExists();
+        ch.mgomez.blahaj.client.CustomImageManager.reloadCustomImages();
     }
 
     @Override

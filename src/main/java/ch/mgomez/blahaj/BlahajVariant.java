@@ -18,6 +18,9 @@ public class BlahajVariant {
     private final String textureFile;
     private final List<String> keywords;
     private final boolean lesser;
+    private final boolean flatImage;
+    private final int imageWidth;
+    private final int imageHeight;
     private ResourceLocation cachedTexture;
 
     public BlahajVariant(String id, String displayName, String textureFile, List<String> alternatives, boolean lesser) {
@@ -25,6 +28,9 @@ public class BlahajVariant {
         this.displayName = displayName;
         this.textureFile = textureFile;
         this.lesser = lesser;
+        this.flatImage = false;
+        this.imageWidth = 0;
+        this.imageHeight = 0;
 
         List<String> kw = new ArrayList<>();
         kw.add(id);
@@ -42,11 +48,33 @@ public class BlahajVariant {
         this(id, displayName, textureFile, Collections.emptyList(), false);
     }
 
+    public BlahajVariant(String id, String displayName, ResourceLocation texture, int imageWidth, int imageHeight,
+        List<String> alternatives) {
+        this.id = id;
+        this.displayName = displayName;
+        this.textureFile = null;
+        this.cachedTexture = texture;
+        this.lesser = false;
+        this.flatImage = true;
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+
+        List<String> kw = new ArrayList<>();
+        kw.add(id);
+        if (alternatives != null) {
+            kw.addAll(alternatives);
+        }
+        this.keywords = Collections.unmodifiableList(kw);
+    }
+
     public String getId() {
         return id;
     }
 
     public String getDisplayName() {
+        if (flatImage) {
+            return displayName;
+        }
         String key = "variant.blahaj." + id;
         if (net.minecraft.util.StatCollector.canTranslate(key)) {
             return net.minecraft.util.StatCollector.translateToLocal(key);
@@ -69,12 +97,24 @@ public class BlahajVariant {
         return lesser;
     }
 
+    public boolean isFlatImage() {
+        return flatImage;
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
     public String getTextureFile() {
         return textureFile;
     }
 
     public ResourceLocation getTexture() {
-        if (cachedTexture == null) {
+        if (cachedTexture == null && textureFile != null) {
             cachedTexture = new ResourceLocation("blahaj", "textures/models/variants/" + textureFile);
         }
         return cachedTexture;
@@ -85,7 +125,20 @@ public class BlahajVariant {
         .asList("small", "smol", "sm\u00f6l", "smolhaj", "tiny", "mini", "pocket");
 
     public static final List<BlahajVariant> ALL_VARIANTS = new ArrayList<>();
+    public static final List<BlahajVariant> CUSTOM_VARIANTS = new ArrayList<>();
     public static final BlahajVariant DEFAULT_VARIANT = new BlahajVariant("default", "Classic blue", "blue_shark.png");
+
+    public static synchronized void registerCustomVariant(BlahajVariant variant) {
+        CUSTOM_VARIANTS.add(variant);
+    }
+
+    public static synchronized void clearCustomVariants() {
+        CUSTOM_VARIANTS.clear();
+    }
+
+    public static synchronized List<BlahajVariant> getCustomVariants() {
+        return new ArrayList<>(CUSTOM_VARIANTS);
+    }
 
     static {
         // Colors
@@ -242,6 +295,38 @@ public class BlahajVariant {
         String[] tokens = lower.split("[ \\-_,.:;!?'\"()\\[\\]{}]+");
         Set<String> tokenSet = new HashSet<>(Arrays.asList(tokens));
 
+        // 1. Check custom flat image variants first
+        BlahajVariant bestCustomMatch = null;
+        int bestCustomKeywordLen = -1;
+
+        synchronized (CUSTOM_VARIANTS) {
+            for (BlahajVariant v : CUSTOM_VARIANTS) {
+                for (String kw : v.getKeywords()) {
+                    String kwLower = kw.toLowerCase(Locale.ROOT);
+                    String[] kwTokens = kwLower.split("[ \\-_]+");
+                    boolean matches = true;
+                    for (String kt : kwTokens) {
+                        if (!tokenSet.contains(kt) && !lower.contains(kt)) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                    if (matches) {
+                        int len = kw.length();
+                        if (bestCustomMatch == null || len > bestCustomKeywordLen) {
+                            bestCustomMatch = v;
+                            bestCustomKeywordLen = len;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (bestCustomMatch != null) {
+            return bestCustomMatch;
+        }
+
+        // 2. Check built-in plushie variants
         BlahajVariant bestMatch = null;
         int bestKeywordLen = -1;
 

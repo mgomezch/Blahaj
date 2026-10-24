@@ -345,4 +345,72 @@ public class BlahajTest {
         assertEquals(1.5, BlahajConfig.chonkerScaleMultiplier, 0.001);
         assertEquals(0.65, BlahajConfig.smallScaleMultiplier, 0.001);
     }
+
+    @Test
+    public void testCustomImageDisplayNameFormatting() {
+        assertEquals("Cool Shark", ch.mgomez.blahaj.client.CustomImageManager.formatDisplayName("cool_shark"));
+        assertEquals("Space Shark", ch.mgomez.blahaj.client.CustomImageManager.formatDisplayName("space-shark"));
+        assertEquals("Pepe", ch.mgomez.blahaj.client.CustomImageManager.formatDisplayName("pepe"));
+        assertEquals(
+            "Gawr Gura Chibi",
+            ch.mgomez.blahaj.client.CustomImageManager.formatDisplayName("gawr_gura_chibi"));
+    }
+
+    @Test
+    public void testCustomImageKeywords() {
+        java.util.List<String> kw = ch.mgomez.blahaj.client.CustomImageManager.generateKeywords("cool_shark");
+        assertTrue(kw.contains("cool_shark"));
+        assertTrue(kw.contains("cool shark"));
+        assertTrue(kw.contains("cool"));
+        assertTrue(kw.contains("shark"));
+    }
+
+    @Test
+    public void testCustomFlatVariantMatchingAndPriority() {
+        try {
+            BlahajVariant.clearCustomVariants();
+
+            net.minecraft.util.ResourceLocation loc1 = new net.minecraft.util.ResourceLocation(
+                "blahaj",
+                "custom/cool_cat");
+            java.util.List<String> kw1 = ch.mgomez.blahaj.client.CustomImageManager.generateKeywords("cool_cat");
+            BlahajVariant custom1 = new BlahajVariant("cool_cat", "Cool Cat", loc1, 64, 48, kw1);
+
+            assertTrue("Custom variant must report isFlatImage() == true", custom1.isFlatImage());
+            assertEquals(64, custom1.getImageWidth());
+            assertEquals(48, custom1.getImageHeight());
+            assertEquals(loc1, custom1.getTexture());
+            assertEquals("Cool Cat", custom1.getDisplayName());
+
+            BlahajVariant.registerCustomVariant(custom1);
+
+            // Test matching by full name and tokens
+            assertEquals(custom1, BlahajVariant.matchVariant("Cool Cat"));
+            assertEquals(custom1, BlahajVariant.matchVariant("cool_cat"));
+            assertEquals(custom1, BlahajVariant.matchVariant("My cool cat plushie"));
+
+            // Test custom override over built-in variant
+            net.minecraft.util.ResourceLocation locBlue = new net.minecraft.util.ResourceLocation(
+                "blahaj",
+                "custom/blue");
+            java.util.List<String> kwBlue = java.util.Arrays.asList("blue", "blue shark");
+            BlahajVariant customBlue = new BlahajVariant("blue", "Custom Blue Shark", locBlue, 32, 32, kwBlue);
+            BlahajVariant.registerCustomVariant(customBlue);
+
+            // Custom variant should override built-in "blue" variant
+            assertEquals(customBlue, BlahajVariant.matchVariant("blue shark"));
+
+            // After clearing, it falls back to built-in variant
+            BlahajVariant.clearCustomVariants();
+            assertEquals(
+                "blue",
+                BlahajVariant.matchVariant("blue shark")
+                    .getId());
+            assertFalse(
+                BlahajVariant.matchVariant("blue shark")
+                    .isFlatImage());
+        } finally {
+            BlahajVariant.clearCustomVariants();
+        }
+    }
 }
