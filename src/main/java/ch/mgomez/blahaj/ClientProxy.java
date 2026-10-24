@@ -233,7 +233,7 @@ public class ClientProxy extends CommonProxy {
         boolean isBlahajItem = itemBlahaj != null && event.itemStack.getItem() == itemBlahaj;
 
         boolean isBlahaj = isBlahajItem
-            || ((isHealingAxe || isToolbox) && RenderBlahajItem.hasCustomName(event.itemStack));
+            || ((isHealingAxe || isToolbox) && BlahajVariant.findVariant(event.itemStack) != null);
 
         if (isBlahaj) {
             if (isHealingAxe) {

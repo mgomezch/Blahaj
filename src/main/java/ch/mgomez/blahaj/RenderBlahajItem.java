@@ -51,7 +51,10 @@ public class RenderBlahajItem implements IItemRenderer {
         if (ClientProxy.itemBlahaj != null && item.getItem() == ClientProxy.itemBlahaj) {
             return true;
         }
-        return hasCustomName(item);
+        if (!hasCustomName(item)) {
+            return false;
+        }
+        return BlahajVariant.findVariant(item) != null;
     }
 
     @Override

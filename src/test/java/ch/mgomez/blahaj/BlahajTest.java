@@ -143,6 +143,15 @@ public class BlahajTest {
 
     @Test
     public void testVariantMatching() {
+        assertNull(BlahajVariant.findVariant((String) null));
+        assertNull(BlahajVariant.findVariant(""));
+        assertNull(BlahajVariant.findVariant("   "));
+        assertNull(BlahajVariant.findVariant("_"));
+        assertNull(BlahajVariant.findVariant("__"));
+        assertNull(BlahajVariant.findVariant("a"));
+        assertNull(BlahajVariant.findVariant("Healing Axe"));
+        assertNull(BlahajVariant.findVariant("Field Engineer's Toolbox"));
+
         assertEquals(
             "default",
             BlahajVariant.matchVariant((String) null)
@@ -155,8 +164,20 @@ public class BlahajTest {
             "default",
             BlahajVariant.matchVariant("Healing Axe")
                 .getId());
+        assertEquals(
+            "default",
+            BlahajVariant.matchVariant("_")
+                .getId());
+        assertEquals(
+            "default",
+            BlahajVariant.matchVariant("a")
+                .getId());
 
         // Pride flags
+        assertEquals(
+            "trans",
+            BlahajVariant.findVariant("Trans Healing Axe")
+                .getId());
         assertEquals(
             "trans",
             BlahajVariant.matchVariant("Trans Healing Axe")
@@ -289,11 +310,47 @@ public class BlahajTest {
         // Shark vs Blahaj
         assertEquals(
             "shark",
-            BlahajVariant.matchVariant("Shark")
+            BlahajVariant.findVariant("Shark")
+                .getId());
+        assertEquals(
+            "shark",
+            BlahajVariant.findVariant("shonk")
                 .getId());
         assertEquals(
             "blahaj",
-            BlahajVariant.matchVariant("Bl\u00e5haj")
+            BlahajVariant.findVariant("blahaj")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("Blahaj")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("BLAHAJ")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("bl\u00e5haj")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("Bl\u00e5haj")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("classic")
+                .getId());
+        assertEquals(
+            "blahaj",
+            BlahajVariant.findVariant("default")
+                .getId());
+        assertEquals(
+            "grey",
+            BlahajVariant.findVariant("grahaj")
+                .getId());
+        assertEquals(
+            "grey",
+            BlahajVariant.findVariant("gr\u00e5haj")
                 .getId());
     }
 
@@ -418,7 +475,8 @@ public class BlahajTest {
 
     @Test
     public void testToolboxVariantMatching() {
-        // Unrenamed Field Engineer's Toolbox returns default variant (classic blue)
+        // Unrenamed Field Engineer's Toolbox returns null for findVariant, and default variant for matchVariant
+        assertNull(BlahajVariant.findVariant("Field Engineer's Toolbox"));
         assertEquals(
             "default",
             BlahajVariant.matchVariant("Field Engineer's Toolbox")
@@ -427,18 +485,23 @@ public class BlahajTest {
             BlahajVariant.matchVariant("Field Engineer's Toolbox")
                 .isFlatImage());
 
+        // Renamed with non-matching strings like "_" or "a" returns null
+        assertNull(BlahajVariant.findVariant("_"));
+        assertNull(BlahajVariant.findVariant("a"));
+        assertNull(BlahajVariant.findVariant("Screwdrivers"));
+
         // Renamed with pride or color keywords
         assertEquals(
             "trans",
-            BlahajVariant.matchVariant("Trans Field Engineer's Toolbox")
+            BlahajVariant.findVariant("Trans Field Engineer's Toolbox")
                 .getId());
         assertEquals(
             "pink",
-            BlahajVariant.matchVariant("Pink Toolbox")
+            BlahajVariant.findVariant("Pink Toolbox")
                 .getId());
         assertEquals(
             "bread",
-            BlahajVariant.matchVariant("Toast Toolbox")
+            BlahajVariant.findVariant("Toast Toolbox")
                 .getId());
 
         // Size keywords on toolbox
@@ -510,7 +573,35 @@ public class BlahajTest {
         assertFalse(renderer.shouldRenderAsBlahaj(null));
         assertFalse(renderer.shouldRenderAsBlahaj(unrenamed));
 
-        // When item has custom name, it renders as Blahaj
+        // When item has custom name that does NOT match any Blahaj variant (like "_", "a", or "My Tool"),
+        // it must NOT render as Blahaj!
+        net.minecraft.item.ItemStack nonMatching1 = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt1 = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display1 = new net.minecraft.nbt.NBTTagCompound();
+        display1.setString("Name", "_");
+        nbt1.setTag("display", display1);
+        nonMatching1.setTagCompound(nbt1);
+        assertFalse("Non-matching name '_' must not render as Blahaj", renderer.shouldRenderAsBlahaj(nonMatching1));
+
+        net.minecraft.item.ItemStack nonMatching2 = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt2 = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display2 = new net.minecraft.nbt.NBTTagCompound();
+        display2.setString("Name", "a");
+        nbt2.setTag("display", display2);
+        nonMatching2.setTagCompound(nbt2);
+        assertFalse("Non-matching name 'a' must not render as Blahaj", renderer.shouldRenderAsBlahaj(nonMatching2));
+
+        net.minecraft.item.ItemStack nonMatching3 = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt3 = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display3 = new net.minecraft.nbt.NBTTagCompound();
+        display3.setString("Name", "My Screwdrivers");
+        nbt3.setTag("display", display3);
+        nonMatching3.setTagCompound(nbt3);
+        assertFalse(
+            "Non-matching name 'My Screwdrivers' must not render as Blahaj",
+            renderer.shouldRenderAsBlahaj(nonMatching3));
+
+        // When item has custom name that matches a Blahaj variant, it renders as Blahaj
         net.minecraft.item.ItemStack renamed = new net.minecraft.item.ItemStack(dummyItem);
         net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
         net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
@@ -520,10 +611,12 @@ public class BlahajTest {
 
         assertTrue(renderer.shouldRenderAsBlahaj(renamed));
 
-        // When item is itemBlahaj, it always renders as Blahaj even if unrenamed
+        // When item is itemBlahaj, it always renders as Blahaj even if unrenamed or given random non-matching name
         try {
             ClientProxy.itemBlahaj = dummyItem;
             assertTrue(renderer.shouldRenderAsBlahaj(unrenamed));
+            assertTrue(renderer.shouldRenderAsBlahaj(nonMatching1));
+            assertTrue(renderer.shouldRenderAsBlahaj(nonMatching2));
         } finally {
             ClientProxy.itemBlahaj = null;
         }

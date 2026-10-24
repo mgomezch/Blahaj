@@ -268,7 +268,7 @@ public class BlahajVariant {
                 "blahaj",
                 "Classic Bl\u00e5haj",
                 "blue_shark.png",
-                Arrays.asList("bl\u00e5haj", "haj", "haai", "hai"),
+                Arrays.asList("blahaj", "bl\u00e5haj", "haj", "haai", "hai", "default", "classic"),
                 true));
     }
 
@@ -276,24 +276,37 @@ public class BlahajVariant {
         ALL_VARIANTS.add(v);
     }
 
-    public static BlahajVariant matchVariant(ItemStack stack) {
-        if (stack == null) return DEFAULT_VARIANT;
-        String nameStr = null;
-        if (stack.hasDisplayName()) {
-            nameStr = stack.getDisplayName();
-        }
-        return matchVariant(nameStr);
+    public static BlahajVariant findVariant(ItemStack stack) {
+        if (stack == null || !stack.hasDisplayName()) return null;
+        return findVariant(stack.getDisplayName());
     }
 
-    public static BlahajVariant matchVariant(String nameStr) {
+    public static BlahajVariant findVariant(String nameStr) {
         if (nameStr == null || nameStr.trim()
             .isEmpty()) {
-            return DEFAULT_VARIANT;
+            return null;
         }
 
         String lower = nameStr.toLowerCase(Locale.ROOT);
-        String[] tokens = lower.split("[ \\-_,.:;!?'\"()\\[\\]{}]+");
-        Set<String> tokenSet = new HashSet<>(Arrays.asList(tokens));
+        String lowerNorm = lower.replace('\u00e5', 'a')
+            .replace('\u00e4', 'a')
+            .replace('\u00f6', 'o');
+        String[] rawTokens = lower.split("[ \\-_,.:;!?'\"()\\[\\]{}]+");
+        Set<String> tokenSet = new HashSet<>();
+        for (String t : rawTokens) {
+            String trimmed = t.trim();
+            if (!trimmed.isEmpty()) {
+                tokenSet.add(trimmed);
+                tokenSet.add(
+                    trimmed.replace('\u00e5', 'a')
+                        .replace('\u00e4', 'a')
+                        .replace('\u00f6', 'o'));
+            }
+        }
+
+        if (tokenSet.isEmpty()) {
+            return null;
+        }
 
         // 1. Check custom flat image variants first
         BlahajVariant bestCustomMatch = null;
@@ -302,11 +315,29 @@ public class BlahajVariant {
         synchronized (CUSTOM_VARIANTS) {
             for (BlahajVariant v : CUSTOM_VARIANTS) {
                 for (String kw : v.getKeywords()) {
-                    String kwLower = kw.toLowerCase(Locale.ROOT);
-                    String[] kwTokens = kwLower.split("[ \\-_]+");
+                    if (kw == null) continue;
+                    String kwLower = kw.toLowerCase(Locale.ROOT)
+                        .trim();
+                    if (kwLower.isEmpty()) continue;
+
+                    String[] kwRawTokens = kwLower.split("[ \\-_]+");
+                    List<String> kwTokens = new ArrayList<>();
+                    for (String kt : kwRawTokens) {
+                        String trimmed = kt.trim();
+                        if (!trimmed.isEmpty()) {
+                            kwTokens.add(trimmed);
+                        }
+                    }
+                    if (kwTokens.isEmpty()) continue;
+
                     boolean matches = true;
                     for (String kt : kwTokens) {
-                        if (!tokenSet.contains(kt) && !lower.contains(kt)) {
+                        String ktNorm = kt.replace('\u00e5', 'a')
+                            .replace('\u00e4', 'a')
+                            .replace('\u00f6', 'o');
+                        boolean tokenMatch = tokenSet.contains(kt) || tokenSet.contains(ktNorm);
+                        boolean subMatch = lower.contains(kt) || lowerNorm.contains(ktNorm);
+                        if (!tokenMatch && (kt.length() < 3 || !subMatch)) {
                             matches = false;
                             break;
                         }
@@ -332,11 +363,29 @@ public class BlahajVariant {
 
         for (BlahajVariant v : ALL_VARIANTS) {
             for (String kw : v.getKeywords()) {
-                String kwLower = kw.toLowerCase(Locale.ROOT);
-                String[] kwTokens = kwLower.split("[ \\-_]+");
+                if (kw == null) continue;
+                String kwLower = kw.toLowerCase(Locale.ROOT)
+                    .trim();
+                if (kwLower.isEmpty()) continue;
+
+                String[] kwRawTokens = kwLower.split("[ \\-_]+");
+                List<String> kwTokens = new ArrayList<>();
+                for (String kt : kwRawTokens) {
+                    String trimmed = kt.trim();
+                    if (!trimmed.isEmpty()) {
+                        kwTokens.add(trimmed);
+                    }
+                }
+                if (kwTokens.isEmpty()) continue;
+
                 boolean matches = true;
                 for (String kt : kwTokens) {
-                    if (!tokenSet.contains(kt) && !lower.contains(kt)) {
+                    String ktNorm = kt.replace('\u00e5', 'a')
+                        .replace('\u00e4', 'a')
+                        .replace('\u00f6', 'o');
+                    boolean tokenMatch = tokenSet.contains(kt) || tokenSet.contains(ktNorm);
+                    boolean subMatch = lower.contains(kt) || lowerNorm.contains(ktNorm);
+                    if (!tokenMatch && (kt.length() < 3 || !subMatch)) {
                         matches = false;
                         break;
                     }
@@ -352,7 +401,21 @@ public class BlahajVariant {
             }
         }
 
-        return bestMatch != null ? bestMatch : DEFAULT_VARIANT;
+        return bestMatch;
+    }
+
+    public static BlahajVariant matchVariant(ItemStack stack) {
+        if (stack == null) return DEFAULT_VARIANT;
+        String nameStr = null;
+        if (stack.hasDisplayName()) {
+            nameStr = stack.getDisplayName();
+        }
+        return matchVariant(nameStr);
+    }
+
+    public static BlahajVariant matchVariant(String nameStr) {
+        BlahajVariant v = findVariant(nameStr);
+        return v != null ? v : DEFAULT_VARIANT;
     }
 
     public static boolean isLarge(ItemStack stack) {
