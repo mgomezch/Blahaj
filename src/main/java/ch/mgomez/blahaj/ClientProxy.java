@@ -152,16 +152,10 @@ public class ClientProxy extends CommonProxy {
             }
         } catch (Throwable ignored) {}
 
-        // 2. GameRegistry lookup across known modids and names
-        String[] modIds = new String[] { "ExtraUtilities", "ExtraUtils", "extrautils" };
-        String[] itemNames = new String[] { "defoliageAxe", "healingAxe" };
-        for (String modId : modIds) {
-            for (String itemName : itemNames) {
-                Item item = GameRegistry.findItem(modId, itemName);
-                if (item != null) {
-                    return item;
-                }
-            }
+        // 2. GameRegistry lookup
+        Item regItem = GameRegistry.findItem("ExtraUtilities", "defoliageAxe");
+        if (regItem != null) {
+            return regItem;
         }
 
         // 3. Fallback: scan Item.itemRegistry
