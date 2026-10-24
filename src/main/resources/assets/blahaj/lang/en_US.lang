@@ -1,0 +1,150 @@
+# Items
+item.blahaj.name=BLÅHAJ
+item.extrautils:defoliageAxe.name=Healing Blåhaj
+item.blahaj.tooltip.desc=A soft 100cm shark plushie.
+item.blahaj.tooltip.cuddle=Right-click to cuddle!
+
+# Tooltips
+tooltip.blahaj.protect=Blåhaj protecc.
+tooltip.blahaj.restore=Holding Blåhaj restores your food and health.
+tooltip.blahaj.variant=Variant: %s
+tooltip.blahaj.size.chonker=[CHONKER]
+tooltip.blahaj.size.smol=[smöl]
+tooltip.blahaj.info.rename=Rename to set color, size, pride flag, variant
+tooltip.blahaj.info.shift=Hold [Shift] for info
+
+# Keybindings
+key.blahaj.live_adjuster=Open live adjuster
+key.categories.blahaj=Blahaj
+
+# Live Adjuster GUI
+gui.blahaj.live_adjuster.title=Blåhaj live adjuster
+gui.blahaj.tab.first_person=1st
+gui.blahaj.tab.third_person=3rd
+gui.blahaj.tab.animation=Spin
+gui.blahaj.tab.sizes=Sizes
+
+gui.blahaj.button.save=Save
+gui.blahaj.button.reset_tab=Reset tab
+gui.blahaj.button.cam_1st=Cam: 1st
+gui.blahaj.button.cam_3rd=Cam: 3rd
+
+gui.blahaj.status.saved=Saved to config!
+gui.blahaj.status.reset=Reset tab defaults!
+gui.blahaj.hint.scroll=Scroll: ± | Shift: fine | Ctrl: fast
+
+gui.blahaj.param.x_pos=X pos
+gui.blahaj.param.y_pos=Y pos
+gui.blahaj.param.z_pos=Z pos
+gui.blahaj.param.x_rot=X rot
+gui.blahaj.param.y_rot=Y rot
+gui.blahaj.param.z_rot=Z rot
+gui.blahaj.param.spin=Spin
+gui.blahaj.param.pitch=Pitch
+gui.blahaj.param.yaw=Yaw
+gui.blahaj.param.roll=Roll
+gui.blahaj.param.smol=smöl
+gui.blahaj.param.chonker=CHONKER
+
+gui.blahaj.toggle.enabled=Enabled
+gui.blahaj.toggle.disabled=Disabled
+
+# Variants
+variant.blahaj.default=Classic blue
+variant.blahaj.grey=Grey shark
+variant.blahaj.red=Red shark
+variant.blahaj.orange=Orange shark
+variant.blahaj.yellow=Yellow shark
+variant.blahaj.lime=Lime shark
+variant.blahaj.green=Green shark
+variant.blahaj.cyan=Cyan shark
+variant.blahaj.blue=Classic blue shark
+variant.blahaj.purple=Purple shark
+variant.blahaj.magenta=Magenta shark
+variant.blahaj.pink=Pink shark
+variant.blahaj.black=Black shark
+variant.blahaj.white=White shark
+
+variant.blahaj.trans=Transgender pride shark
+variant.blahaj.pride=Rainbow pride shark
+variant.blahaj.prider=Progress pride shark
+variant.blahaj.lesbian=Lesbian pride shark
+variant.blahaj.gay=Gay pride shark
+variant.blahaj.bi=Bisexual pride shark
+variant.blahaj.pan=Pansexual pride shark
+variant.blahaj.ace=Asexual pride shark
+variant.blahaj.aroace=Aroace pride shark
+variant.blahaj.aro=Aromantic pride shark
+variant.blahaj.enby=Non-Binary pride shark
+variant.blahaj.genderfluid=Genderfluid pride shark
+variant.blahaj.genderqueer=Genderqueer pride shark
+variant.blahaj.agender=Agender pride shark
+variant.blahaj.intersex=Intersex pride shark
+variant.blahaj.poly=Polysexual pride shark
+variant.blahaj.demiboy=Demiboy pride shark
+variant.blahaj.demigirl=Demigirl pride shark
+variant.blahaj.demisexual=Demisexual pride shark
+variant.blahaj.demiromantic=Demiromantic pride shark
+variant.blahaj.greysexual=Greysexual pride shark
+variant.blahaj.greyromantic=Greyromantic pride shark
+variant.blahaj.greyrose=Greyrose pride shark
+
+variant.blahaj.bread=Bread shark
+variant.blahaj.whale=Blåvingad whale
+variant.blahaj.bridget=Bridget shark
+variant.blahaj.astolfo_bean=Haunted Astolfo bean shark
+variant.blahaj.mahiro_school=School Mahiro shark
+variant.blahaj.mahiro_lazy=Lazy eepy Mahiro shark
+variant.blahaj.shark=Natural shark
+variant.blahaj.blahaj=Classic Blåhaj
+
+# Configuration Categories & Tooltips (Forge Mod Options GUI)
+blahaj.config.category.first_person=First person
+blahaj.config.category.first_person.tooltip=First-person lateral position and angle settings.
+blahaj.config.category.third_person=Third person
+blahaj.config.category.third_person.tooltip=Third-person lateral position and angle settings on player model.
+blahaj.config.category.animation=Animation
+blahaj.config.category.animation.tooltip=Continuous spinning animation and speed settings.
+blahaj.config.category.sizes=Sizes
+blahaj.config.category.sizes.tooltip=Size scale multipliers for named variants.
+
+# Configuration Properties & Tooltips
+blahaj.config.first_person.posX=X position
+blahaj.config.first_person.posX.tooltip=Lateral X offset in first-person.
+blahaj.config.first_person.posY=Y position
+blahaj.config.first_person.posY.tooltip=Vertical Y offset in first-person.
+blahaj.config.first_person.posZ=Z position
+blahaj.config.first_person.posZ.tooltip=Depth Z offset in first-person.
+blahaj.config.first_person.rotX=X rotation
+blahaj.config.first_person.rotX.tooltip=Pitch rotation (X axis) in first-person.
+blahaj.config.first_person.rotY=Y rotation
+blahaj.config.first_person.rotY.tooltip=Yaw rotation (Y axis) in first-person.
+blahaj.config.first_person.rotZ=Z rotation
+blahaj.config.first_person.rotZ.tooltip=Roll rotation (Z axis, along length) in first-person.
+
+blahaj.config.third_person.posX=X position
+blahaj.config.third_person.posX.tooltip=Lateral X offset on player model in third-person.
+blahaj.config.third_person.posY=Y position
+blahaj.config.third_person.posY.tooltip=Vertical Y offset on player model in third-person.
+blahaj.config.third_person.posZ=Z position
+blahaj.config.third_person.posZ.tooltip=Depth Z offset on player model in third-person.
+blahaj.config.third_person.rotX=X rotation
+blahaj.config.third_person.rotX.tooltip=Pitch rotation (X axis) in third-person.
+blahaj.config.third_person.rotY=Y rotation
+blahaj.config.third_person.rotY.tooltip=Yaw rotation (Y axis) in third-person.
+blahaj.config.third_person.rotZ=Z rotation
+blahaj.config.third_person.rotZ.tooltip=Roll rotation (Z axis, along length) in third-person.
+
+blahaj.config.animation.enableSpin=Enable spin
+blahaj.config.animation.enableSpin.tooltip=Whether Blåhaj continuously spins while held.
+blahaj.config.animation.spinSpeedPitch=Pitch spin speed
+blahaj.config.animation.spinSpeedPitch.tooltip=Continuous spin speed around pitch axis (X) in degrees per second.
+blahaj.config.animation.spinSpeedYaw=Yaw spin speed
+blahaj.config.animation.spinSpeedYaw.tooltip=Continuous spin speed around yaw axis (Y) in degrees per second.
+blahaj.config.animation.spinSpeedRoll=Roll spin speed
+blahaj.config.animation.spinSpeedRoll.tooltip=Continuous spin speed along model length (Z) in degrees per second.
+
+blahaj.config.sizes.chonkerScaleMultiplier=CHONKER scale multiplier
+blahaj.config.sizes.chonkerScaleMultiplier.tooltip=Scale multiplier applied for chonker/big/large variants.
+blahaj.config.sizes.smallScaleMultiplier=smöl scale multiplier
+blahaj.config.sizes.smallScaleMultiplier.tooltip=Scale multiplier applied for small/smol/smöl variants.

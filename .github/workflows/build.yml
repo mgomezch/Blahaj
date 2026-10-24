@@ -1,0 +1,92 @@
+name: Build Blåhaj
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*', '[0-9]+.[0-9]+*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & package mod
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build assemble
+
+      - name: Identify build jars
+        id: jars
+        run: |
+          RELEASE_JAR=$(ls build/libs/blahaj-*.jar | grep -v '\-dev\.jar' | grep -v '\-sources\.jar' | grep -v '\-dirty' | head -n 1)
+          DEV_JAR=$(ls build/libs/blahaj-*-dev.jar | grep -v '\-dirty' | head -n 1)
+          SOURCES_JAR=$(ls build/libs/blahaj-*-sources.jar | grep -v '\-dirty' | head -n 1)
+
+          echo "release_jar=$RELEASE_JAR" >> "$GITHUB_OUTPUT"
+          echo "release_name=$(basename "$RELEASE_JAR")" >> "$GITHUB_OUTPUT"
+          echo "dev_jar=$DEV_JAR" >> "$GITHUB_OUTPUT"
+          echo "dev_name=$(basename "$DEV_JAR")" >> "$GITHUB_OUTPUT"
+          echo "sources_jar=$SOURCES_JAR" >> "$GITHUB_OUTPUT"
+          echo "sources_name=$(basename "$SOURCES_JAR")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release jar
+        if: steps.jars.outputs.release_jar != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.jars.outputs.release_name }}
+          path: ${{ steps.jars.outputs.release_jar }}
+
+      - name: Upload dev jar
+        if: steps.jars.outputs.dev_jar != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.jars.outputs.dev_name }}
+          path: ${{ steps.jars.outputs.dev_jar }}
+
+      - name: Upload sources jar
+        if: steps.jars.outputs.sources_jar != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.jars.outputs.sources_name }}
+          path: ${{ steps.jars.outputs.sources_jar }}
+
+      - name: Publish rolling latest release
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          prerelease: true
+          files: |
+            build/libs/blahaj-*.jar
+            !build/libs/*-dirty*.jar
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/libs/blahaj-*.jar
+            !build/libs/*-dirty*.jar
+          generate_release_notes: true
