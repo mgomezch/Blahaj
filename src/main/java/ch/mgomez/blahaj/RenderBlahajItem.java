@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.IItemRenderer;
 
@@ -12,27 +13,90 @@ import org.lwjgl.opengl.GL11;
 
 public class RenderBlahajItem implements IItemRenderer {
 
+    private final IItemRenderer parentRenderer;
+
+    public RenderBlahajItem() {
+        this(null);
+    }
+
+    public RenderBlahajItem(IItemRenderer parentRenderer) {
+        this.parentRenderer = parentRenderer;
+    }
+
+    public IItemRenderer getParentRenderer() {
+        return parentRenderer;
+    }
+
+    public static boolean hasCustomName(ItemStack stack) {
+        if (stack == null || !stack.hasTagCompound()) {
+            return false;
+        }
+        NBTTagCompound nbt = stack.getTagCompound();
+        if (!nbt.hasKey("display", 10)) {
+            return false;
+        }
+        NBTTagCompound display = nbt.getCompoundTag("display");
+        if (!display.hasKey("Name", 8)) {
+            return false;
+        }
+        String name = display.getString("Name");
+        return name != null && !name.trim()
+            .isEmpty();
+    }
+
+    public boolean shouldRenderAsBlahaj(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+        if (ClientProxy.itemBlahaj != null && item.getItem() == ClientProxy.itemBlahaj) {
+            return true;
+        }
+        return hasCustomName(item);
+    }
+
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {
-        return true;
+        if (shouldRenderAsBlahaj(item)) {
+            return true;
+        }
+        if (parentRenderer != null) {
+            return parentRenderer.handleRenderType(item, type);
+        }
+        return false;
     }
 
     @Override
     public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper) {
-        switch (helper) {
-            case ENTITY_ROTATION:
-            case ENTITY_BOBBING:
-                return true;
-            case EQUIPPED_BLOCK:
-            case BLOCK_3D:
-            case INVENTORY_BLOCK:
-            default:
-                return false;
+        if (shouldRenderAsBlahaj(item)) {
+            switch (helper) {
+                case ENTITY_ROTATION:
+                case ENTITY_BOBBING:
+                    return true;
+                case EQUIPPED_BLOCK:
+                case BLOCK_3D:
+                case INVENTORY_BLOCK:
+                default:
+                    return false;
+            }
         }
+        if (parentRenderer != null) {
+            return parentRenderer.shouldUseRenderHelper(type, item, helper);
+        }
+        return false;
     }
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
+        if (shouldRenderAsBlahaj(item)) {
+            renderBlahaj(type, item, data);
+            return;
+        }
+        if (parentRenderer != null) {
+            parentRenderer.renderItem(type, item, data);
+        }
+    }
+
+    private void renderBlahaj(ItemRenderType type, ItemStack item, Object... data) {
         GL11.glPushMatrix();
 
         BlahajVariant variant = BlahajVariant.matchVariant(item);

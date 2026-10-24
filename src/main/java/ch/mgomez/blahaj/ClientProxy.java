@@ -93,7 +93,8 @@ public class ClientProxy extends CommonProxy {
             extraUtilsHealingAxe = findHealingAxe();
         }
         if (extraUtilsHealingAxe != null) {
-            RenderBlahajItem renderer = new RenderBlahajItem();
+            net.minecraftforge.client.IItemRenderer parent = getRegisteredItemRenderer(extraUtilsHealingAxe);
+            RenderBlahajItem renderer = new RenderBlahajItem(parent);
             MinecraftForgeClient.registerItemRenderer(extraUtilsHealingAxe, renderer);
             BlahajMod.LOG.info(
                 "Successfully registered 3D Bl\u00e5haj plushie renderer for ExtraUtilities healing axe ("
@@ -110,7 +111,8 @@ public class ClientProxy extends CommonProxy {
             gregtechToolbox = findToolbox();
         }
         if (gregtechToolbox != null) {
-            RenderBlahajItem renderer = new RenderBlahajItem();
+            net.minecraftforge.client.IItemRenderer parent = getRegisteredItemRenderer(gregtechToolbox);
+            RenderBlahajItem renderer = new RenderBlahajItem(parent);
             MinecraftForgeClient.registerItemRenderer(gregtechToolbox, renderer);
             BlahajMod.LOG.info(
                 "Successfully registered 3D Bl\u00e5haj plushie renderer for GregTech toolbox ("
@@ -119,6 +121,25 @@ public class ClientProxy extends CommonProxy {
         } else {
             BlahajMod.LOG.info("GregTech toolbox not found; skipping toolbox renderer registration.");
         }
+    }
+
+    public static net.minecraftforge.client.IItemRenderer getRegisteredItemRenderer(Item item) {
+        if (item == null) return null;
+        try {
+            Field f = MinecraftForgeClient.class.getDeclaredField("customItemRenderers");
+            f.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            java.util.Map<Item, net.minecraftforge.client.IItemRenderer> map = (java.util.Map<Item, net.minecraftforge.client.IItemRenderer>) f
+                .get(null);
+            if (map != null) {
+                net.minecraftforge.client.IItemRenderer r = map.get(item);
+                if (r instanceof RenderBlahajItem) {
+                    return ((RenderBlahajItem) r).getParentRenderer();
+                }
+                return r;
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 
     public static Item findHealingAxe() {
@@ -218,7 +239,10 @@ public class ClientProxy extends CommonProxy {
         boolean isToolbox = gregtechToolbox != null && event.itemStack.getItem() == gregtechToolbox;
         boolean isBlahajItem = itemBlahaj != null && event.itemStack.getItem() == itemBlahaj;
 
-        if (isHealingAxe || isToolbox || isBlahajItem) {
+        boolean isBlahaj = isBlahajItem
+            || ((isHealingAxe || isToolbox) && RenderBlahajItem.hasCustomName(event.itemStack));
+
+        if (isBlahaj) {
             if (isHealingAxe) {
                 event.toolTip.add(
                     EnumChatFormatting.AQUA

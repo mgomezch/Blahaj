@@ -11,6 +11,8 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import net.minecraftforge.client.IItemRenderer;
+
 import org.junit.Test;
 
 public class BlahajTest {
@@ -51,7 +53,9 @@ public class BlahajTest {
 
         // Items and tooltips
         assertEquals("BLÅHAJ", props.get("item.blahaj.name"));
-        assertEquals("Healing Blåhaj", props.get("item.extrautils:defoliageAxe.name"));
+        assertNull(
+            "Lang file must not hijack item.extrautils:defoliageAxe.name",
+            props.get("item.extrautils:defoliageAxe.name"));
         assertNotNull(props.get("item.blahaj.tooltip.desc"));
         assertNotNull(props.get("item.blahaj.tooltip.cuddle"));
         assertNotNull(props.get("tooltip.blahaj.protect"));
@@ -472,5 +476,130 @@ public class BlahajTest {
             // In pure JUnit without full Forge GameData bootstrap, registerItem may throw; safe fallback is tested
             // above
         }
+    }
+
+    @Test
+    public void testHasCustomName() {
+        assertFalse(RenderBlahajItem.hasCustomName(null));
+
+        net.minecraft.item.Item dummyItem = new net.minecraft.item.Item();
+        net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(dummyItem);
+        assertFalse(RenderBlahajItem.hasCustomName(stack));
+
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        stack.setTagCompound(nbt);
+        assertFalse(RenderBlahajItem.hasCustomName(stack));
+
+        nbt.setString("SomeOtherModTag", "data");
+        assertFalse(RenderBlahajItem.hasCustomName(stack));
+
+        net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
+        nbt.setTag("display", display);
+        assertFalse(RenderBlahajItem.hasCustomName(stack));
+
+        display.setString("Name", "   ");
+        assertFalse(RenderBlahajItem.hasCustomName(stack));
+
+        display.setString("Name", "Sharky");
+        assertTrue(RenderBlahajItem.hasCustomName(stack));
+    }
+
+    @Test
+    public void testShouldRenderAsBlahaj() {
+        RenderBlahajItem renderer = new RenderBlahajItem();
+        net.minecraft.item.Item dummyItem = new net.minecraft.item.Item();
+        net.minecraft.item.ItemStack unrenamed = new net.minecraft.item.ItemStack(dummyItem);
+
+        assertFalse(renderer.shouldRenderAsBlahaj(null));
+        assertFalse(renderer.shouldRenderAsBlahaj(unrenamed));
+
+        // When item has custom name, it renders as Blahaj
+        net.minecraft.item.ItemStack renamed = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
+        display.setString("Name", "Trans Shark");
+        nbt.setTag("display", display);
+        renamed.setTagCompound(nbt);
+
+        assertTrue(renderer.shouldRenderAsBlahaj(renamed));
+
+        // When item is itemBlahaj, it always renders as Blahaj even if unrenamed
+        try {
+            ClientProxy.itemBlahaj = dummyItem;
+            assertTrue(renderer.shouldRenderAsBlahaj(unrenamed));
+        } finally {
+            ClientProxy.itemBlahaj = null;
+        }
+    }
+
+    @Test
+    public void testRenderBlahajItemDelegation() {
+        final boolean[] parentCalled = new boolean[2];
+        IItemRenderer mockParent = new IItemRenderer() {
+
+            @Override
+            public boolean handleRenderType(net.minecraft.item.ItemStack item, ItemRenderType type) {
+                parentCalled[0] = true;
+                return true;
+            }
+
+            @Override
+            public boolean shouldUseRenderHelper(ItemRenderType type, net.minecraft.item.ItemStack item,
+                ItemRendererHelper helper) {
+                parentCalled[1] = true;
+                return true;
+            }
+
+            @Override
+            public void renderItem(ItemRenderType type, net.minecraft.item.ItemStack item, Object... data) {}
+        };
+
+        RenderBlahajItem standaloneRenderer = new RenderBlahajItem();
+        RenderBlahajItem chainedRenderer = new RenderBlahajItem(mockParent);
+
+        assertEquals(mockParent, chainedRenderer.getParentRenderer());
+        assertNull(standaloneRenderer.getParentRenderer());
+
+        net.minecraft.item.Item dummyItem = new net.minecraft.item.Item();
+        net.minecraft.item.ItemStack unrenamed = new net.minecraft.item.ItemStack(dummyItem);
+
+        // Standalone renderer without parent returns false for unrenamed item
+        assertFalse(standaloneRenderer.handleRenderType(unrenamed, IItemRenderer.ItemRenderType.EQUIPPED));
+        assertFalse(
+            standaloneRenderer.shouldUseRenderHelper(
+                IItemRenderer.ItemRenderType.EQUIPPED,
+                unrenamed,
+                IItemRenderer.ItemRendererHelper.ENTITY_ROTATION));
+
+        // Chained renderer delegates to parent for unrenamed item
+        assertTrue(chainedRenderer.handleRenderType(unrenamed, IItemRenderer.ItemRenderType.EQUIPPED));
+        assertTrue(parentCalled[0]);
+        assertTrue(
+            chainedRenderer.shouldUseRenderHelper(
+                IItemRenderer.ItemRenderType.EQUIPPED,
+                unrenamed,
+                IItemRenderer.ItemRendererHelper.ENTITY_ROTATION));
+        assertTrue(parentCalled[1]);
+
+        // When renamed, chained renderer handles it as Blahaj directly without calling parent
+        parentCalled[0] = false;
+        parentCalled[1] = false;
+        net.minecraft.item.ItemStack renamed = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
+        display.setString("Name", "Shark");
+        nbt.setTag("display", display);
+        renamed.setTagCompound(nbt);
+
+        assertTrue(chainedRenderer.handleRenderType(renamed, IItemRenderer.ItemRenderType.EQUIPPED));
+        assertFalse("Parent handleRenderType should not be called when item is renamed to Blahaj", parentCalled[0]);
+        assertTrue(
+            chainedRenderer.shouldUseRenderHelper(
+                IItemRenderer.ItemRenderType.ENTITY,
+                renamed,
+                IItemRenderer.ItemRendererHelper.ENTITY_ROTATION));
+        assertFalse(
+            "Parent shouldUseRenderHelper should not be called when item is renamed to Blahaj",
+            parentCalled[1]);
     }
 }
