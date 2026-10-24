@@ -214,36 +214,6 @@ public class BlahajVariant {
         register(
             new BlahajVariant("greyrose", "Greyrose pride shark", "greyrose_shark.png", Arrays.asList("grayrose")));
 
-        // Special characters; I don't know what half of these are, don't @ me
-        register(
-            new BlahajVariant("bread", "Bread shark", "bread_shark.png", Arrays.asList("baguette", "toast", "loaf")));
-        register(
-            new BlahajVariant("whale", "Blåvingad whale", "whale_shark.png", Arrays.asList("blavingad", "blåvingad")));
-        register(
-            new BlahajVariant(
-                "bridget",
-                "Bridget shark",
-                "bridget_shark.png",
-                Arrays.asList("biscuit", "basket", "bucket", "brisket")));
-        register(
-            new BlahajVariant(
-                "astolfo_bean",
-                "Haunted Astolfo bean shark",
-                "astolfo_bean_shark.png",
-                Arrays.asList("astolfo", "bean")));
-        register(
-            new BlahajVariant(
-                "mahiro_school",
-                "School Mahiro shark",
-                "mahiro_school_shark.png",
-                Arrays.asList("mahiro", "oyama", "onimai")));
-        register(
-            new BlahajVariant(
-                "mahiro_lazy",
-                "Lazy eepy Mahiro shark",
-                "mahiro_lazy_shark.png",
-                Arrays.asList("lazy mahiro", "eepy mahiro")));
-
         // Generic shark matches (marked lesser so specific variants take priority)
         register(
             new BlahajVariant(

@@ -269,44 +269,6 @@ public class BlahajTest {
             BlahajVariant.matchVariant("White Shark")
                 .getId());
 
-        // Characters & fun
-        assertEquals(
-            "bread",
-            BlahajVariant.matchVariant("Toast Shark")
-                .getId());
-        assertEquals(
-            "bread",
-            BlahajVariant.matchVariant("Baguette")
-                .getId());
-        assertEquals(
-            "whale",
-            BlahajVariant.matchVariant("Bl\u00e5vingad")
-                .getId());
-        assertEquals(
-            "bridget",
-            BlahajVariant.matchVariant("Brisket")
-                .getId());
-        assertEquals(
-            "bridget",
-            BlahajVariant.matchVariant("Basket")
-                .getId());
-        assertEquals(
-            "astolfo_bean",
-            BlahajVariant.matchVariant("Astolfo Bean")
-                .getId());
-        assertEquals(
-            "mahiro_school",
-            BlahajVariant.matchVariant("Mahiro Oyama")
-                .getId());
-        assertEquals(
-            "mahiro_lazy",
-            BlahajVariant.matchVariant("Lazy Mahiro")
-                .getId());
-        assertEquals(
-            "mahiro_lazy",
-            BlahajVariant.matchVariant("Eepy Mahiro")
-                .getId());
-
         // Shark vs Blahaj
         assertEquals(
             "shark",
@@ -376,7 +338,7 @@ public class BlahajTest {
         assertTrue(BlahajVariant.isSmall("Small Bl\u00e5haj"));
         assertTrue(BlahajVariant.isSmall("Sm\u00f6l gay shark"));
         assertTrue(BlahajVariant.isSmall("Tiny trans"));
-        assertTrue(BlahajVariant.isSmall("Mini bread"));
+        assertTrue(BlahajVariant.isSmall("Mini shark"));
         assertTrue(BlahajVariant.isSmall("Pocket haj"));
     }
 
@@ -500,8 +462,8 @@ public class BlahajTest {
             BlahajVariant.findVariant("Pink Toolbox")
                 .getId());
         assertEquals(
-            "bread",
-            BlahajVariant.findVariant("Toast Toolbox")
+            "grey",
+            BlahajVariant.findVariant("Gray Toolbox")
                 .getId());
 
         // Size keywords on toolbox
