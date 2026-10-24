@@ -18,7 +18,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class ClientProxy extends CommonProxy {
 
-    public static Item extraUtilsHealingAxe = null;
+    public static Item healingAxe = null;
     public static Item gregtechToolbox = null;
 
     public static net.minecraft.client.settings.KeyBinding keyLiveAdjuster = new net.minecraft.client.settings.KeyBinding(
@@ -89,20 +89,19 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void registerHealingAxeRenderer() {
-        if (extraUtilsHealingAxe == null) {
-            extraUtilsHealingAxe = findHealingAxe();
+        if (healingAxe == null) {
+            healingAxe = findHealingAxe();
         }
-        if (extraUtilsHealingAxe != null) {
-            net.minecraftforge.client.IItemRenderer parent = getRegisteredItemRenderer(extraUtilsHealingAxe);
+        if (healingAxe != null) {
+            net.minecraftforge.client.IItemRenderer parent = getRegisteredItemRenderer(healingAxe);
             RenderBlahajItem renderer = new RenderBlahajItem(parent);
-            MinecraftForgeClient.registerItemRenderer(extraUtilsHealingAxe, renderer);
+            MinecraftForgeClient.registerItemRenderer(healingAxe, renderer);
             BlahajMod.LOG.info(
-                "Successfully registered 3D Bl\u00e5haj plushie renderer for ExtraUtilities healing axe ("
-                    + extraUtilsHealingAxe.getUnlocalizedName()
+                "Successfully registered 3D Bl\u00e5haj plushie renderer for healing axe ("
+                    + healingAxe.getUnlocalizedName()
                     + ")!");
         } else {
-            BlahajMod.LOG.warn(
-                "ExtraUtilities healing axe not found; 3D Bl\u00e5haj renderer active for standalone plushie only.");
+            BlahajMod.LOG.info("Healing axe not found; skipping healing axe renderer registration.");
         }
     }
 
@@ -229,13 +228,13 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         if (event.itemStack == null) return;
-        if (extraUtilsHealingAxe == null) {
-            extraUtilsHealingAxe = findHealingAxe();
+        if (healingAxe == null) {
+            healingAxe = findHealingAxe();
         }
         if (gregtechToolbox == null) {
             gregtechToolbox = findToolbox();
         }
-        boolean isHealingAxe = extraUtilsHealingAxe != null && event.itemStack.getItem() == extraUtilsHealingAxe;
+        boolean isHealingAxe = healingAxe != null && event.itemStack.getItem() == healingAxe;
         boolean isToolbox = gregtechToolbox != null && event.itemStack.getItem() == gregtechToolbox;
         boolean isBlahajItem = itemBlahaj != null && event.itemStack.getItem() == itemBlahaj;
 

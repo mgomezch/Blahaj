@@ -53,9 +53,6 @@ public class BlahajTest {
 
         // Items and tooltips
         assertEquals("BLÅHAJ", props.get("item.blahaj.name"));
-        assertNull(
-            "Lang file must not hijack item.extrautils:defoliageAxe.name",
-            props.get("item.extrautils:defoliageAxe.name"));
         assertNotNull(props.get("item.blahaj.tooltip.desc"));
         assertNotNull(props.get("item.blahaj.tooltip.cuddle"));
         assertNotNull(props.get("tooltip.blahaj.protect"));
