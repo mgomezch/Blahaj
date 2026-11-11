@@ -59,7 +59,11 @@ public class BlahajTest {
         assertEquals("Variant: %s", props.get("tooltip.blahaj.variant"));
         assertNotNull(props.get("tooltip.blahaj.size.chonker"));
         assertNotNull(props.get("tooltip.blahaj.size.smol"));
-        assertNotNull(props.get("tooltip.blahaj.info.rename"));
+        assertNotNull(props.get("tooltip.blahaj.invisible"));
+        assertEquals("[invisible]", props.get("tooltip.blahaj.invisible"));
+        assertEquals(
+            "Rename to set color, size, pride flag, variant, invisible",
+            props.get("tooltip.blahaj.info.rename"));
         assertNotNull(props.get("tooltip.blahaj.info.shift"));
 
         // Keybindings
@@ -653,5 +657,128 @@ public class BlahajTest {
         assertFalse(
             "Parent shouldUseRenderHelper should not be called when item is renamed to Blahaj",
             parentCalled[1]);
+    }
+
+    @Test
+    public void testInvisibleDetection() {
+        assertFalse(BlahajVariant.isInvisible((String) null));
+        assertFalse(BlahajVariant.isInvisible((net.minecraft.item.ItemStack) null));
+        assertFalse(BlahajVariant.isInvisible(""));
+        assertFalse(BlahajVariant.isInvisible("   "));
+        assertFalse(BlahajVariant.isInvisible("_"));
+        assertFalse(BlahajVariant.isInvisible("Healing Axe"));
+        assertFalse(BlahajVariant.isInvisible("Trans shark"));
+        assertFalse(BlahajVariant.isInvisible("Field Engineer's Toolbox"));
+
+        assertTrue(BlahajVariant.isInvisible("invisible"));
+        assertTrue(BlahajVariant.isInvisible("Invisible"));
+        assertTrue(BlahajVariant.isInvisible("INVISIBLE"));
+        assertTrue(BlahajVariant.isInvisible("invis"));
+        assertTrue(BlahajVariant.isInvisible("hidden"));
+        assertTrue(BlahajVariant.isInvisible("vanish"));
+        assertTrue(BlahajVariant.isInvisible("Invisible Healing Axe"));
+        assertTrue(BlahajVariant.isInvisible("Smol invisible trans shark"));
+        assertTrue(BlahajVariant.isInvisible("Hidden tool"));
+        assertTrue(BlahajVariant.isInvisible("Vanish axe"));
+
+        net.minecraft.item.Item dummy = new net.minecraft.item.Item();
+        net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(dummy);
+        assertFalse(BlahajVariant.isInvisible(stack));
+
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
+        display.setString("Name", "Invisible Healing Axe");
+        nbt.setTag("display", display);
+        stack.setTagCompound(nbt);
+        assertTrue(BlahajVariant.isInvisible(stack));
+    }
+
+    @Test
+    public void testRenderBlahajItemInvisibleHandling() {
+        final boolean[] parentCalled = new boolean[3];
+        IItemRenderer mockParent = new IItemRenderer() {
+
+            @Override
+            public boolean handleRenderType(net.minecraft.item.ItemStack item, ItemRenderType type) {
+                parentCalled[0] = true;
+                return true;
+            }
+
+            @Override
+            public boolean shouldUseRenderHelper(ItemRenderType type, net.minecraft.item.ItemStack item,
+                ItemRendererHelper helper) {
+                parentCalled[1] = true;
+                return true;
+            }
+
+            @Override
+            public void renderItem(ItemRenderType type, net.minecraft.item.ItemStack item, Object... data) {
+                parentCalled[2] = true;
+            }
+        };
+
+        RenderBlahajItem chained = new RenderBlahajItem(mockParent);
+        RenderBlahajItem standalone = new RenderBlahajItem();
+
+        net.minecraft.item.Item dummyItem = new net.minecraft.item.Item();
+        net.minecraft.item.ItemStack invisStack = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display = new net.minecraft.nbt.NBTTagCompound();
+        display.setString("Name", "Invisible Healing Axe");
+        nbt.setTag("display", display);
+        invisStack.setTagCompound(nbt);
+
+        // 1. Invisible item without shark variant:
+        // Viewport held types must return true to intercept rendering
+        assertTrue(chained.handleRenderType(invisStack, IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON));
+        assertTrue(chained.handleRenderType(invisStack, IItemRenderer.ItemRenderType.EQUIPPED));
+        assertFalse("Parent handleRenderType must not be called for invisible held item", parentCalled[0]);
+
+        // Render helper must return false for held invisible item
+        assertFalse(
+            chained.shouldUseRenderHelper(
+                IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON,
+                invisStack,
+                IItemRenderer.ItemRendererHelper.EQUIPPED_BLOCK));
+        assertFalse(
+            chained.shouldUseRenderHelper(
+                IItemRenderer.ItemRenderType.EQUIPPED,
+                invisStack,
+                IItemRenderer.ItemRendererHelper.EQUIPPED_BLOCK));
+        assertFalse("Parent shouldUseRenderHelper must not be called for invisible held item", parentCalled[1]);
+
+        // renderItem must return immediately without calling parent or throwing
+        chained.renderItem(IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON, invisStack);
+        chained.renderItem(IItemRenderer.ItemRenderType.EQUIPPED, invisStack);
+        assertFalse("Parent renderItem must not be called for invisible held item", parentCalled[2]);
+
+        // Inventory rendering for invisible-only item:
+        // It should NOT render as Blahaj
+        assertFalse(chained.shouldRenderAsBlahaj(invisStack));
+        // Standalone returns false (allowing vanilla 2D sprite)
+        assertFalse(standalone.handleRenderType(invisStack, IItemRenderer.ItemRenderType.INVENTORY));
+        // Chained delegates to parent
+        parentCalled[0] = false;
+        assertTrue(chained.handleRenderType(invisStack, IItemRenderer.ItemRenderType.INVENTORY));
+        assertTrue(
+            "Chained renderer must delegate to parent for inventory slot when no shark variant",
+            parentCalled[0]);
+
+        // 2. Invisible item WITH shark variant (e.g. "Invisible Trans Shark"):
+        net.minecraft.item.ItemStack invisShark = new net.minecraft.item.ItemStack(dummyItem);
+        net.minecraft.nbt.NBTTagCompound nbt2 = new net.minecraft.nbt.NBTTagCompound();
+        net.minecraft.nbt.NBTTagCompound display2 = new net.minecraft.nbt.NBTTagCompound();
+        display2.setString("Name", "Invisible Trans Shark");
+        nbt2.setTag("display", display2);
+        invisShark.setTagCompound(nbt2);
+
+        // In viewport, it is still invisible
+        assertTrue(chained.handleRenderType(invisShark, IItemRenderer.ItemRenderType.EQUIPPED_FIRST_PERSON));
+        assertTrue(chained.handleRenderType(invisShark, IItemRenderer.ItemRenderType.EQUIPPED));
+
+        // In inventory, it renders as Blahaj
+        assertTrue(chained.shouldRenderAsBlahaj(invisShark));
+        assertTrue(chained.handleRenderType(invisShark, IItemRenderer.ItemRenderType.INVENTORY));
+        assertTrue(standalone.handleRenderType(invisShark, IItemRenderer.ItemRenderType.INVENTORY));
     }
 }

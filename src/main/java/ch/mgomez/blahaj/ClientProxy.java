@@ -232,8 +232,9 @@ public class ClientProxy extends CommonProxy {
         boolean isToolbox = gregtechToolbox != null && event.itemStack.getItem() == gregtechToolbox;
         boolean isBlahajItem = itemBlahaj != null && event.itemStack.getItem() == itemBlahaj;
 
-        boolean isBlahaj = isBlahajItem
-            || ((isHealingAxe || isToolbox) && BlahajVariant.findVariant(event.itemStack) != null);
+        boolean isCustomBlahaj = (isHealingAxe || isToolbox)
+            && (BlahajVariant.findVariant(event.itemStack) != null || BlahajVariant.isInvisible(event.itemStack));
+        boolean isBlahaj = isBlahajItem || isCustomBlahaj;
 
         if (isBlahaj) {
             if (isHealingAxe) {
@@ -242,8 +243,8 @@ public class ClientProxy extends CommonProxy {
                         + net.minecraft.util.StatCollector.translateToLocal("tooltip.blahaj.protect"));
             }
 
-            BlahajVariant variant = BlahajVariant.matchVariant(event.itemStack);
-            if (variant != BlahajVariant.DEFAULT_VARIANT) {
+            BlahajVariant variant = BlahajVariant.findVariant(event.itemStack);
+            if (variant != null && variant != BlahajVariant.DEFAULT_VARIANT) {
                 String rawVariant = net.minecraft.util.StatCollector.translateToLocal("tooltip.blahaj.variant");
                 if (rawVariant.contains("%s")) {
                     event.toolTip.add(
@@ -266,6 +267,11 @@ public class ClientProxy extends CommonProxy {
                 event.toolTip.add(
                     EnumChatFormatting.AQUA
                         + net.minecraft.util.StatCollector.translateToLocal("tooltip.blahaj.size.smol"));
+            }
+            if (BlahajVariant.isInvisible(event.itemStack)) {
+                event.toolTip.add(
+                    EnumChatFormatting.GRAY
+                        + net.minecraft.util.StatCollector.translateToLocal("tooltip.blahaj.invisible"));
             }
 
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {

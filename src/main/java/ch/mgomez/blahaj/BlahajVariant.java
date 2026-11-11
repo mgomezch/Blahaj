@@ -123,6 +123,7 @@ public class BlahajVariant {
     public static final List<String> LARGE_KEYWORDS = Arrays.asList("large", "big", "chonker", "chonk");
     public static final List<String> SMALL_KEYWORDS = Arrays
         .asList("small", "smol", "sm\u00f6l", "smolhaj", "tiny", "mini", "pocket");
+    public static final List<String> INVISIBLE_KEYWORDS = Arrays.asList("invisible", "invis", "hidden", "vanish");
 
     public static final List<BlahajVariant> ALL_VARIANTS = new ArrayList<>();
     public static final List<BlahajVariant> CUSTOM_VARIANTS = new ArrayList<>();
@@ -411,6 +412,20 @@ public class BlahajVariant {
         if (nameStr == null) return false;
         String lower = nameStr.toLowerCase(Locale.ROOT);
         for (String kw : SMALL_KEYWORDS) {
+            if (lower.contains(kw)) return true;
+        }
+        return false;
+    }
+
+    public static boolean isInvisible(ItemStack stack) {
+        if (stack == null || !stack.hasDisplayName()) return false;
+        return isInvisible(stack.getDisplayName());
+    }
+
+    public static boolean isInvisible(String nameStr) {
+        if (nameStr == null) return false;
+        String lower = nameStr.toLowerCase(Locale.ROOT);
+        for (String kw : INVISIBLE_KEYWORDS) {
             if (lower.contains(kw)) return true;
         }
         return false;

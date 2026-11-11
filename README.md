@@ -18,6 +18,8 @@ You can craft the plushie item.  More likely, though, you'll want to rename your
 
 If the name includes "shark", "blahaj", "shonk", or any size/color/pride-flag name (see below), it will change its appearance.
 
+If the name includes "invisible" (or "invis", "hidden", "vanish"), the item will render nothing at all in your viewport when held in either hand, while retaining a visible appearance as an item in your inventory.
+
 There's a keybind for an in-game menu where you can fine-tune the position and angle of your haj.  You can also make it spin because why not.
 
 Config goes in `config/blahaj.cfg`.
@@ -71,7 +73,8 @@ These are case-insensitive.  Try naming your healing axe "Smol trans shonk" or s
 | Black        | `black`                                                |
 | White        | `white`                                                |
 
-| Size    | Keywords                                                     | Default scale |
-|:--------|:-------------------------------------------------------------|:--------------|
-| Chonker | `chonker`, `chonk`, `big`, `large`                           | `1.5x`        |
-| Smöl    | `small`, `smol`, `smöl`, `smolhaj`, `tiny`, `mini`, `pocket` | `0.65x`       |
+| Modifier  | Keywords                                                     | Effect                                                     |
+|:----------|:-------------------------------------------------------------|:-----------------------------------------------------------|
+| Chonker   | `chonker`, `chonk`, `big`, `large`                           | `1.5x` scale multiplier                                    |
+| Smöl      | `small`, `smol`, `smöl`, `smolhaj`, `tiny`, `mini`, `pocket` | `0.65x` scale multiplier                                   |
+| Invisible | `invisible`, `invis`, `hidden`, `vanish`                     | Invisible in hand / viewport, visible in inventory         |

@@ -9,7 +9,8 @@ tooltip.blahaj.restore=Holding Blåhaj restores your food and health.
 tooltip.blahaj.variant=Variant: %s
 tooltip.blahaj.size.chonker=[CHONKER]
 tooltip.blahaj.size.smol=[smöl]
-tooltip.blahaj.info.rename=Rename to set color, size, pride flag, variant
+tooltip.blahaj.invisible=[invisible]
+tooltip.blahaj.info.rename=Rename to set color, size, pride flag, variant, invisible
 tooltip.blahaj.info.shift=Hold [Shift] for info
 
 # Keybindings

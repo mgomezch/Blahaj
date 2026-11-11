@@ -57,8 +57,33 @@ public class RenderBlahajItem implements IItemRenderer {
         return BlahajVariant.findVariant(item) != null;
     }
 
+    /*-
+    Note [Invisible held item rendering in viewport] (generated)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Players who hold utility items such as ExtraUtilities' Healing Axe continuously
+    in GTNH (often in the offhand or mainhand for passive health and hunger saturation)
+    frequently request an unobstructed viewport without the held item model or sprite
+    covering the screen.
+    
+    When an item is renamed with the "invisible" keyword (e.g. "Invisible",
+    "Invisible Healing Axe", "Invisible Trans Shark"):
+    1. In first-person and third-person held states (EQUIPPED_FIRST_PERSON and EQUIPPED),
+       handleRenderType returns true to intercept rendering, and renderItem returns
+       immediately without emitting any OpenGL draw calls or matrix transforms.  This
+       renders nothing at all in the player's viewport.
+    2. In inventory slots (INVENTORY), if the item does not specify a shark variant,
+       handleRenderType returns false (or delegates to parentRenderer), allowing vanilla
+       Minecraft to render the original 2D item icon.  If a shark variant is also
+       specified, handleRenderType returns true and renders the 3D plushie in the GUI.
+       Either way, the item remains clearly visible in inventories and containers.
+    */
+
     @Override
     public boolean handleRenderType(ItemStack item, ItemRenderType type) {
+        if (BlahajVariant.isInvisible(item) // See Note [Invisible held item rendering in viewport]
+            && (type == ItemRenderType.EQUIPPED_FIRST_PERSON || type == ItemRenderType.EQUIPPED)) {
+            return true;
+        }
         if (shouldRenderAsBlahaj(item)) {
             return true;
         }
@@ -70,6 +95,10 @@ public class RenderBlahajItem implements IItemRenderer {
 
     @Override
     public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper) {
+        if (BlahajVariant.isInvisible(item) // See Note [Invisible held item rendering in viewport]
+            && (type == ItemRenderType.EQUIPPED_FIRST_PERSON || type == ItemRenderType.EQUIPPED)) {
+            return false;
+        }
         if (shouldRenderAsBlahaj(item)) {
             switch (helper) {
                 case ENTITY_ROTATION:
@@ -90,6 +119,10 @@ public class RenderBlahajItem implements IItemRenderer {
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
+        if (BlahajVariant.isInvisible(item) // See Note [Invisible held item rendering in viewport]
+            && (type == ItemRenderType.EQUIPPED_FIRST_PERSON || type == ItemRenderType.EQUIPPED)) {
+            return;
+        }
         if (shouldRenderAsBlahaj(item)) {
             renderBlahaj(type, item, data);
             return;
